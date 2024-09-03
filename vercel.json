@@ -5,7 +5,7 @@
       "src": "app.py",
       "use": "@vercel/python",
       "config": {
-        "installCommand": "pip install numpy==1.22.0 pandas==1.4.3"
+        "installCommand": "pip install --no-cache-dir --only-binary=:all: -r requirements.txt"
       }
     }
   ],
