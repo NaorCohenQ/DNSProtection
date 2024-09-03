@@ -35,5 +35,5 @@ def run_simulation():
 
     return jsonify(results)  # Return the results as JSON to the frontend
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
