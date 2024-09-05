@@ -14,41 +14,59 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h1 class="card-title text-center mb-4"><i class="fas fa-shield-alt"></i> DNS Protection Simulator</h1>
-                <!-- Inside the <div class="card-body"> ... </div> section of both index.html and rhhh.html -->
 
-                      <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 rounded">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#"><i class="fas fa-network-wired"></i> DNS Protection</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/rhhh' %}active{% endif %}" href="/rhhh">RHHH Algorithm</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+                <!-- Navigation -->
+                <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 rounded">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" href="#"><i class="fas fa-network-wired"></i> DNS Protection</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="/">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == '/rhhh' %}active{% endif %}" href="/rhhh">RHHH Algorithm</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
 
-
+                <!-- Simulation Form -->
                 <form id="simulatorForm" class="mb-4">
                     <div class="mb-3">
                         <label for="attack_perc" class="form-label"><i class="fas fa-bug"></i> Attack Percentage:</label>
-                        <input type="number" class="form-control" id="attack_perc" name="attack_perc" value="50" min="0" max="100">
+                        <input type="number" class="form-control" id="attack_perc" name="attack_perc" value="80" min="0" max="1000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subs_perc" class="form-label"><i class="fas fa-network-wired"></i> Subnet Percentage:</label>
+                        <input type="number" class="form-control" id="subs_perc" name="subs_perc" value="4" min="0" max="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_perc" class="form-label"><i class="fas fa-clock"></i> Start Percentage:</label>
+                        <input type="number" class="form-control" id="start_perc" name="start_perc" value="0" min="0" max="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pref_size" class="form-label"><i class="fas fa-sitemap"></i> Prefix Size:</label>
+                        <input type="number" class="form-control" id="pref_size" name="pref_size" value="4" min="1" max="4" required>
                     </div>
                     <button type="submit" class="btn btn-primary w-100"><i class="fas fa-play-circle"></i> Run Simulation</button>
                 </form>
+
+                <!-- Results Section -->
                 <div id="results" class="d-none">
                     <h2 class="text-center text-success"><i class="fas fa-chart-line"></i> Results</h2>
                     <ul class="list-group">
                         <li class="list-group-item"><i class="fas fa-tasks"></i> Total Requests: <span id="total_requests"></span></li>
                         <li class="list-group-item"><i class="fas fa-ban"></i> Blocked Requests: <span id="blocked_count"></span></li>
                         <li class="list-group-item"><i class="fas fa-user-shield"></i> Legitimate Requests Blocked: <span id="legit_blocked"></span></li>
+                        <li class="list-group-item"><i class="fas fa-exclamation-triangle"></i> Attack Requests: <span id="attack_requests"></span></li>
+                        <li class="list-group-item"><i class="fas fa-shield-alt"></i> Attack Requests Blocked: <span id="attack_blocked"></span></li>
+                        <li class="list-group-item"><i class="fas fa-percentage"></i> Percentage of Attack Traffic Blocked: <span id="percentage_attack_blocked"></span>%</li>
+                        <li class="list-group-item"><i class="fas fa-percentage"></i> Percentage of Legitimate Traffic Blocked: <span id="percentage_legit_blocked"></span>%</li>
                     </ul>
                 </div>
             </div>
@@ -59,23 +77,33 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
-
     <!-- FontAwesome JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 
+    <!-- JavaScript for form handling and validation -->
     <script>
         document.getElementById('simulatorForm').addEventListener('submit', function(e) {
             e.preventDefault();  // Prevent form from submitting the usual way
 
             let attack_perc = document.getElementById('attack_perc').value;
+            let subs_perc = document.getElementById('subs_perc').value;
+            let start_perc = document.getElementById('start_perc').value;
+            let pref_size = document.getElementById('pref_size').value;
 
+            // Basic validation
+            if (attack_perc < 0 || attack_perc > 1000 || subs_perc < 0 || subs_perc > 100 || start_perc < 0 || start_perc > 100 || pref_size < 1 || pref_size > 4) {
+                alert('Invalid input! Please ensure that the values are within the valid ranges.');
+                return;
+            }
+
+            // Send the form data using POST to Flask backend
             // Send the form data using POST to Flask backend
             fetch('/run_simulation', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `attack_perc=${attack_perc}`
+                body: `attack_perc=${attack_perc}&subs_perc=${subs_perc}&start_perc=${start_perc}&pref_size=${pref_size}`
             })
             .then(response => response.json())
             .then(data => {
@@ -83,6 +111,10 @@
                 document.getElementById('total_requests').textContent = data.total_requests;
                 document.getElementById('blocked_count').textContent = data.blocked_count;
                 document.getElementById('legit_blocked').textContent = data.legit_blocked;
+                document.getElementById('attack_requests').textContent = data.attack_requests;
+                document.getElementById('attack_blocked').textContent = data.attack_blocked;
+                document.getElementById('percentage_attack_blocked').textContent = data.percentage_attack_blocked.toFixed(2);
+                document.getElementById('percentage_legit_blocked').textContent = data.percentage_legit_blocked.toFixed(2);
 
                 // Show the results section
                 document.getElementById('results').classList.remove('d-none');
