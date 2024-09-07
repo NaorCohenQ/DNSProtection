@@ -182,6 +182,7 @@ class Simulator:
         self.att_req = 0
         self.legit_blocked = 0
         self.end_tstmp = 0
+        self.loadC = 0
 
 
     def is_valid_ipv4(self,ip):
@@ -261,7 +262,26 @@ class Simulator:
                 # Reset the octets to the original subnet for the next iteration
                 octets = subnet.split('.')
         return generated_ips
-
+    # def generate_attack_traces(self, subnets, num_requests, first_timestamp,pref_size):
+    #     attack_traff = []
+    #     #timestamp = first_timestamp
+    #     timestamp = random.choice(first_timestamp)
+    #     max_t=timestamp
+    #     size = int(num_requests/len(subnets))
+    #     splus = num_requests%len(subnets)
+    #     subs = self.randomized_subnets(subnets,pref_size)
+    #     all_ips = self.generate_ips_for_subnets(subs,size)
+    #     random.shuffle(all_ips)
+    #     for ip in all_ips:
+    #         attack_traff.append((timestamp, ip,0))
+    #         timestamp += random.randint(0, 10)  # Increment timestamp by a small random amount
+    #     for i in range(0,splus):
+    #          attack_traff.append((timestamp, all_ips[0],0))
+    #          timestamp = random.choice(first_timestamp)
+    #          max_t =max(timestamp,max_t)
+    #          #timestamp += random.randint(0, 1)  # Increment timestamp by a small random amount
+    #     self.end_tstmp = max_t
+    #     return attack_traff
     def generate_attack_traces(self, subnets, num_requests, first_timestamp,pref_size):
         attack_traff = []
         timestamp = first_timestamp
@@ -275,7 +295,7 @@ class Simulator:
             timestamp += random.randint(0, 10)  # Increment timestamp by a small random amount
         for i in range(0,splus):
              attack_traff.append((timestamp, all_ips[0],0))
-             timestamp += random.randint(0, 10)  # Increment timestamp by a small random amount
+             timestamp += random.randint(0, 1)  # Increment timestamp by a small random amount
         self.end_tstmp = timestamp
         return attack_traff
 
@@ -297,7 +317,8 @@ class Simulator:
         #Normalized the timestamp column.
         K = csvData['timestamp'].iloc[0]
         csvData['timestamp'] = csvData['timestamp'] - K
-
+        times = set(csvData['timestamp'])
+        times = list(times)
         csvData['isOrig'] = 1
 
         # Example attacker simulation
@@ -320,11 +341,12 @@ class Simulator:
             start_tstmp = int(gap *(start_perc/100))
 
         real_traffic = list(csvData.itertuples(index=False, name=None))
-
+        timesX =[t for t in times if t>=start_tstmp]
         num_requests = (int)(len(real_traffic)*(attack_perc/100))
         # real_traffic = [packet for packet in csvData['q_src']]
         self.att_req = num_requests
         attack_traffic = self.generate_attack_traces(subnets,num_requests,start_tstmp,pref_size)
+        #attack_traffic = self.generate_attack_traces(subnets,num_requests,timesX,pref_size)
         #attack_traffic = self.generate_attack_traffic(subnets, num_requests, start_tstmp)
         #attack_traffic=attack_traff
         # Combine real traffic with attack traffic
@@ -338,14 +360,28 @@ class Simulator:
         self.total_requests = len(combined_traffic)
         self.legitimate_requests = len(real_traffic)
 
+        calc_load = {}
+        curr =0
+        curr_ts = 0
         protLayer = DNSProtectionLayer(10,rhhh,self.end_tstmp,0.8,pref_size-1)
         # Update RHHH with each packet's source IP
         for packet in combined_traffic:
+           if packet[0] != curr_ts:
+                curr+=1
+                curr_ts = packet[0]
+
+           if curr not in calc_load:
+                calc_load[curr] = 0
+           calc_load[curr]+=1
            result = protLayer.process_request(packet)
            if result == "Blocked":
                 self.blocked_count += 1
                 self.legit_blocked = self.legit_blocked + packet[is_orig]
+        self.loadC = calc_load
+        #print(calc_load)
 
+    def get_load(self):
+        return self.loadC
     def blocked_stats(self):
         return self.blocked_count
 
@@ -373,9 +409,9 @@ class Simulator:
         print(f"Percentage of Attacked Traffic Blocked: {(self.blocked_count-self.legit_blocked)/self.att_req * 100:.2f}%")
         print(f"Percentage of Legitimate Traffic Blocked: {self.legit_blocked/self.legitimate_requests * 100:.2f}%")
 
-# smltr = Simulator()
-# smltr.simulate_attack(80,4,0,3)
-# smltr.printStats()
+#smltr = Simulator()
+#smltr.simulate_attack(80,4,0,3)
+#smltr.printStats()
 
 #A value is trying to be set on a copy of a slice from a DataFrame.
 #Try using .loc[row_indexer,col_indexer] = value instead

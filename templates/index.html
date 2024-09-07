@@ -62,6 +62,7 @@
                     <ul class="list-group">
                         <li class="list-group-item"><i class="fas fa-tasks"></i> Total Requests: <span id="total_requests"></span></li>
                         <li class="list-group-item"><i class="fas fa-ban"></i> Blocked Requests: <span id="blocked_count"></span></li>
+                        <li class="list-group-item"><i class="fas fa-user-check"></i> Legitimate Requests: <span id="legit_requests"></span></li>
                         <li class="list-group-item"><i class="fas fa-user-shield"></i> Legitimate Requests Blocked: <span id="legit_blocked"></span></li>
                         <li class="list-group-item"><i class="fas fa-exclamation-triangle"></i> Attack Requests: <span id="attack_requests"></span></li>
                         <li class="list-group-item"><i class="fas fa-shield-alt"></i> Attack Requests Blocked: <span id="attack_blocked"></span></li>
@@ -69,6 +70,19 @@
                         <li class="list-group-item"><i class="fas fa-percentage"></i> Percentage of Legitimate Traffic Blocked: <span id="percentage_legit_blocked"></span>%</li>
                     </ul>
                 </div>
+
+
+
+                <!-- Graph Section -->
+                <div id="graph_section" class="d-none mt-5">
+                    <h2 class="text-center text-info"><i class="fas fa-chart-pie"></i> Graphs</h2>
+                    <div class="text-center">
+                        <img id="blocked_chart" src="" alt="Blocked Requests Chart" class="img-fluid" />
+                    </div>
+
+
+                </div>
+
             </div>
         </div>
     </div>
@@ -82,44 +96,52 @@
 
     <!-- JavaScript for form handling and validation -->
     <script>
-        document.getElementById('simulatorForm').addEventListener('submit', function(e) {
-            e.preventDefault();  // Prevent form from submitting the usual way
+              // Existing simulation form handling
+                document.getElementById('simulatorForm').addEventListener('submit', function(e) {
+                e.preventDefault();  // Prevent form from submitting the usual way
 
-            let attack_perc = document.getElementById('attack_perc').value;
-            let subs_perc = document.getElementById('subs_perc').value;
-            let start_perc = document.getElementById('start_perc').value;
-            let pref_size = document.getElementById('pref_size').value;
+                let attack_perc = document.getElementById('attack_perc').value;
+                let subs_perc = document.getElementById('subs_perc').value;
+                let start_perc = document.getElementById('start_perc').value;
+                let pref_size = document.getElementById('pref_size').value;
 
-            // Basic validation
-            if (attack_perc < 0 || attack_perc > 1000 || subs_perc < 0 || subs_perc > 100 || start_perc < 0 || start_perc > 100 || pref_size < 1 || pref_size > 4) {
-                alert('Invalid input! Please ensure that the values are within the valid ranges.');
-                return;
-            }
+                document.getElementById('blocked_chart').src = "";
+                //document.getElementById('load_chart').src = "";
 
-            // Send the form data using POST to Flask backend
-            // Send the form data using POST to Flask backend
-            fetch('/run_simulation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `attack_perc=${attack_perc}&subs_perc=${subs_perc}&start_perc=${start_perc}&pref_size=${pref_size}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Update the results in the HTML
-                document.getElementById('total_requests').textContent = data.total_requests;
-                document.getElementById('blocked_count').textContent = data.blocked_count;
-                document.getElementById('legit_blocked').textContent = data.legit_blocked;
-                document.getElementById('attack_requests').textContent = data.attack_requests;
-                document.getElementById('attack_blocked').textContent = data.attack_blocked;
-                document.getElementById('percentage_attack_blocked').textContent = data.percentage_attack_blocked.toFixed(2);
-                document.getElementById('percentage_legit_blocked').textContent = data.percentage_legit_blocked.toFixed(2);
+                // Send the form data using POST to Flask backend
+                fetch('/run_simulation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `attack_perc=${attack_perc}&subs_perc=${subs_perc}&start_perc=${start_perc}&pref_size=${pref_size}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the results in the HTML
+                    document.getElementById('total_requests').textContent = data.total_requests;
+                    document.getElementById('blocked_count').textContent = data.blocked_count;
+                    document.getElementById('legit_requests').textContent = data.legit_requests;
+                    document.getElementById('legit_blocked').textContent = data.legit_blocked;
+                    document.getElementById('attack_requests').textContent = data.attack_requests;
+                    document.getElementById('attack_blocked').textContent = data.attack_blocked;
+                    document.getElementById('percentage_attack_blocked').textContent = data.percentage_attack_blocked.toFixed(2);
+                    document.getElementById('percentage_legit_blocked').textContent = data.percentage_legit_blocked.toFixed(2);
 
-                // Show the results section
-                document.getElementById('results').classList.remove('d-none');
+                    // Generate the graphs and update the chart
+                    const imgSrc = `/generate_plot?legit_blocked=${data.legit_blocked}&attack_blocked=${data.attack_blocked}&perc_legit_blocked=${data.percentage_legit_blocked}&perc_attack_blocked=${data.percentage_attack_blocked}&total_requests=${data.total_requests}&blocked_count=${data.blocked_count}&legit_not_blocked=${data.legit_requests-data.legit_blocked}&attack_not_blocked=${data.attack_requests-data.attack_blocked}`;
+                    document.getElementById('blocked_chart').src = imgSrc;
+
+                    // Add this line to fetch the new load plot (Packets vs Ticks)
+
+
+                    document.getElementById('graph_section').classList.remove('d-none');
+
+                    // Show the results section
+                    document.getElementById('results').classList.remove('d-none');
+                });
             });
-        });
+
     </script>
 </body>
 </html>
