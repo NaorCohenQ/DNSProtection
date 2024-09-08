@@ -13,6 +13,7 @@
             <div class="card-body">
                 <h1 class="card-title text-center mb-4">RHHH Algorithm</h1>
 
+                <!-- Navigation -->
                 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 rounded">
                     <div class="container-fluid">
                         <a class="navbar-brand" href="#"><i class="fas fa-network-wired"></i> DNS Protection</a>
@@ -22,36 +23,87 @@
                         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="/">Home</a>
+                                    <a class="nav-link" aria-current="page" href="/">Home</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {% if request.path == '/rhhh' %}active{% endif %}" href="/rhhh">RHHH Algorithm</a>
+                                    <a class="nav-link active" href="/rhhh">RHHH Algorithm</a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </nav>
 
-                <p>
-                    The Randomized Hierarchical Heavy Hitters (RHHH) algorithm is designed to efficiently detect heavy hitters
-                    within hierarchical structures, such as IP address ranges in network traffic. It works by identifying
-                    prefixes (e.g., /8, /16, /24) that generate a significant amount of traffic and might indicate potential
-                    sources of DDoS attacks or other anomalies.
-                </p>
+                <!-- HHH Algorithm Section -->
+                <h1 class="card-title text-center mb-4">Hierarchical Heavy Hitters (HHH) Algorithm</h1>
 
                 <p>
-                    RHHH operates by sampling and tracking the most significant traffic sources across multiple hierarchical levels,
-                    allowing for a scalable and efficient method to detect network threats in real-time. This is particularly useful
-                    in environments where large volumes of network traffic must be monitored continuously.
+                    The <strong>Hierarchical Heavy Hitters (HHH)</strong> algorithm is designed to detect traffic sources responsible for generating large amounts of data across different hierarchical levels, such as IP address ranges (/8, /16, /24, /32).
+                </p>
+                <p>
+                    It identifies heavy hitters within a hierarchy by analyzing traffic patterns at multiple granularities. For example, it helps determine which IP prefixes are generating the most traffic, making it useful in detecting potential congestion or DDoS attacks.
                 </p>
 
-                <h3>Key Features:</h3>
+                <!-- RHHH Algorithm Section -->
+                <h1 class="card-title text-center mb-4">Randomized Hierarchical Heavy Hitters (RHHH) Algorithm</h1>
+
+                <p>
+                    The <strong>Randomized Hierarchical Heavy Hitters (RHHH)</strong> algorithm extends the HHH algorithm by introducing randomization to improve scalability and efficiency. In environments where tracking large volumes of traffic is computationally expensive, RHHH optimizes detection by using random sampling while maintaining accuracy.
+                </p>
+                <p>
+                    RHHH works by sampling traffic at various hierarchical levels (e.g., /8, /16, /24) to track the most significant traffic sources. It’s particularly useful for identifying DDoS attack sources or anomalies in high-traffic environments.
+                </p>
+
+                <h3>Key Features of RHHH:</h3>
                 <ul>
-                    <li>Identifies heavy hitters across hierarchical levels.</li>
-                    <li>Efficiently processes large volumes of data.</li>
-                    <li>Scalable to handle diverse network traffic patterns.</li>
-                    <li>Can be used to detect potential DDoS attacks.</li>
+                    <li>Tracks significant traffic sources across multiple hierarchical levels (e.g., IP prefixes).</li>
+                    <li>Randomized sampling improves performance without sacrificing accuracy.</li>
+                    <li>Scales to handle high-traffic environments.</li>
+                    <li>Helps detect potential DDoS attacks and other network anomalies in real-time.</li>
                 </ul>
+
+                <!-- Our Algorithm Section -->
+                <h2 class="card-title text-center mb-4" style="color: #007bff; font-weight: bold;">Our DNS Attack Detection Algorithm</h2>
+
+                <p>
+                    Our algorithm is designed to detect and block DNS attacks, particularly focusing on <strong>NXDOMAIN (NXD) attacks</strong>. The algorithm combines:
+                </p>
+                <ul>
+                    <li><strong>Dynamic IP behavior monitoring using RHHH</strong>: The RHHH algorithm, particularly its <code>update</code> method, tracks patterns from various IP addresses and monitors the volume of traffic.</li>
+                    <li><strong>Threshold-based Blocking</strong>: IP addresses that seem to be part of an attack are blocked based on a dynamically adjusted threshold, calculated using traffic patterns tracked by RHHH.</li>
+                </ul>
+
+                <p>
+                    Our algorithm works as follows:
+                </p>
+
+                <ol>
+                    <li>The algorithm receives a packet and maintains a blacklist of blocked IP addresses.</li>
+                    <li>If the packet’s source IP is in the blacklist, the request is blocked immediately.</li>
+                    <li>If the IP is not on the blacklist, the packet is sent to the DNS server. This action either succeeds or fails:
+                        <ul>
+                            <li>If the request succeeds (i.e., it’s legitimate), the IP is passed to the <code>update</code> function of RHHH, and its traffic is tracked as legitimate.</li>
+                            <li>If the request fails (NXDOMAIN), we maintain a counter <code>K</code> to track how many times the DNS server couldn't process the request.</li>
+                        </ul>
+                    </li>
+                    <li>If <code>K</code> exceeds a threshold <code>Y</code> (calculated from RHHH counters for the IP), the IP is added to the blacklist.</li>
+                    <li>Blocked IPs stay on the blacklist for a certain number of ticks and are automatically removed afterward. If an IP reappears on the blacklist during this period, it is blocked immediately.</li>
+                </ol>
+
+                <h3 class="text-center">Example Scenario</h3>
+
+                <p>
+                    <b>Scenario:</b> An IP sends 10 legitimate DNS requests followed by 5 NXDOMAIN requests.
+                </p>
+                <ul>
+                    <li>For each legitimate request, the RHHH algorithm updates its counters, recording the IP as legitimate traffic.</li>
+                    <li>As NXDOMAIN requests begin arriving, the counter <code>K</code> for this IP increments.</li>
+                    <li>Once <code>K</code> exceeds the threshold <code>Y</code> (calculated from RHHH counters for the IP), the IP is added to the blacklist.</li>
+                    <li>Subsequent requests from this IP are blocked automatically, preventing further attack attempts.</li>
+                </ul>
+
+                <p>
+                    By combining dynamic traffic monitoring and threshold-based blocking, this approach effectively mitigates DNS attacks, ensuring legitimate traffic flows while identifying and blocking potential attackers.
+                </p>
             </div>
         </div>
     </div>

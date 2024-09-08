@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: your-app-name
+    env: python
+    buildCommand: "apt-get update && apt-get install -y libfreetype6-dev libxft-dev libjpeg-dev zlib1g-dev && pip install --no-cache-dir -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production

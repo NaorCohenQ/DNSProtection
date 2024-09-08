@@ -367,7 +367,7 @@ class Simulator:
         calc_load = {}
         curr =0
         curr_ts = 0
-        protLayer = DNSProtectionLayer(10,rhhh,self.end_tstmp,0.99,pref_size-1)
+        protLayer = DNSProtectionLayer(10,rhhh,self.end_tstmp,0.2,pref_size-1)
         # Update RHHH with each packet's source IP
         for packet in combined_traffic:
            if packet[0] != curr_ts:
@@ -434,7 +434,7 @@ class Simulator:
 
 
 smltr = Simulator()
-smltr.simulate_attack(80,4,0,4)
+smltr.simulate_attack(300,4,0,2)
 smltr.printStats()
 
 #A value is trying to be set on a copy of a slice from a DataFrame.
