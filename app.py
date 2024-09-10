@@ -39,7 +39,6 @@ def run_simulation():
     attack_blocked = blocked_count - legit_blocked
     perc_attack_blocked = (attack_blocked / attack_requests) * 100 if attack_requests > 0 else 0
     perc_legit_blocked = (legit_blocked / legit_requests) * 100 if legit_requests > 0 else 0
-
     legit_not_blocked = legit_requests - legit_blocked
     attack_not_blocked = attack_requests - attack_blocked
 

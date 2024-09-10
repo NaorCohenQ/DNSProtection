@@ -494,7 +494,7 @@ class Simulator:
     def get_subnets(self):
         red_sub = self.reduced_subs[0]
         if len(red_sub)>=20:
-            red_sub = self.reduced_subs[:20]
+            red_sub = red_sub[:20]
         res = [self.get_prefix(x,self.prefi_size-1) for x in red_sub]
         res = set(res)
         return list(res)
@@ -579,7 +579,7 @@ class Simulator:
 
 
 smltr = Simulator()
-smltr.simulate_attack(300,4,0,2,10000,0.01)
+smltr.simulate_attack(300,12,0,3,10000,0.01)
 smltr.printStats()
 print(smltr.get_subnets())
 # print("-----------------------------------------------")

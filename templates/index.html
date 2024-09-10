@@ -49,7 +49,7 @@
                             <i class="fas fa-bug"></i> Attack Percentage:
                             <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Enter the percentage of traffic that simulates attack packets."></i>
                         </label>
-                        <input type="number" class="form-control" id="attack_perc" name="attack_perc" value="80" min="0" max="1000" required>
+                        <input type="number" class="form-control" id="attack_perc" name="attack_perc" value="250" min="0" max="1000" required>
                     </div>
                     <div class="mb-3">
                         <label for="subs_perc" class="form-label">
@@ -70,7 +70,7 @@
                             <i class="fas fa-sitemap"></i> Prefix Size:
                             <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Set the prefix size for subnetting (1 for /8, 2 for /16, etc.)."></i>
                         </label>
-                        <input type="number" class="form-control" id="pref_size" name="pref_size" value="4" min="1" max="4" required>
+                        <input type="number" class="form-control" id="pref_size" name="pref_size" value="3" min="1" max="4" required>
                     </div>
 
                     <!-- Add a spinner for loading -->
@@ -140,10 +140,10 @@
         <div id="diagramCollapse" class="collapse show">
             <div class="card-body">
                 <ul class="list-group">
-                    <li class="list-group-item"><b>Graph 1:</b> Blocked Requests Comparison - Compares the number of blocked legitimate requests and attack requests.</li>
+                    <li class="list-group-item"><b>Graph 1:</b> Blocked Requests Comparison - Shows both attack & legitimate blocked requests in numbers and percentages.</li>
                     <li class="list-group-item"><b>Graph 2:</b> Total Blocked vs Non-blocked Requests - Displays the proportion of requests blocked vs requests that passed through.</li>
                     <li class="list-group-item"><b>Graph 3:</b> Legitimate vs Attack Non-blocked Requests - Shows the amount of legitimate and attack requests that were not blocked.</li>
-                    <li class="list-group-item"><b>Graph 4:</b> Packets vs Ticks - Displays the number of packets processed over time (ticks).</li>
+                    <li class="list-group-item"><b>Graph 4:</b> Packets per Ticks - Displays the number of packets processed over time (ticks).</li>
                     <li class="list-group-item"><b>Graph 5:</b> Attack vs Legitimate Packets per Tick - Compares the number of attack and legitimate packets per tick.</li>
                     <li class="list-group-item"><b>Graph 6:</b> Attack vs Legitimate Requests per Tick - Visualizes the number of attack and legitimate requests per tick sent to the DNS server.</li>
                 </ul>
