@@ -18,10 +18,10 @@ def index():
 @app.route('/rhhh')
 def rhhh_info():
     return render_template('rhhh.html')
-
 @app.route('/run_simulation', methods=['POST'])
 def run_simulation():
     global simulator
+    num_of_packets = int(request.form['num_of_packets'])
     attack_perc = int(request.form['attack_perc'])
     subs_perc = int(request.form['subs_perc'])
     start_perc = int(request.form['start_perc'])
@@ -29,7 +29,7 @@ def run_simulation():
 
     # Initialize the simulator and run the simulation
     simulator = Simulator()
-    simulator.simulate_attack(attack_perc, subs_perc, start_perc, pref_size)
+    simulator.simulate_attack(attack_perc, subs_perc, start_perc, pref_size, num_of_packets, 0.01)
 
     blocked_count = simulator.blocked_stats()
     total_requests = simulator.total_req_stats()
@@ -43,6 +43,10 @@ def run_simulation():
     legit_not_blocked = legit_requests - legit_blocked
     attack_not_blocked = attack_requests - attack_blocked
 
+    # Get additional information
+    total_legit_ips = simulator.get_total_subs()  # Total legitimate source IPs
+    attack_subnets = simulator.get_subnets()  # Subnets involved in the attack
+
     # Prepare the results to send back to the frontend
     results = {
         'blocked_count': blocked_count,
@@ -54,10 +58,16 @@ def run_simulation():
         'percentage_attack_blocked': perc_attack_blocked,
         'percentage_legit_blocked': perc_legit_blocked,
         'legit_not_blocked': legit_not_blocked,
-        'attack_not_blocked': attack_not_blocked
+        'attack_not_blocked': attack_not_blocked,
+        'num_of_packets': num_of_packets,
+        'start_perc': start_perc,
+        'total_legit_ips': total_legit_ips,
+        'attack_subnets': attack_subnets
     }
-    #generate_load_plot()
+
     return jsonify(results)
+
+
 @app.route('/generate_plot')
 def generate_plot():
     global simulator
@@ -79,8 +89,22 @@ def generate_plot():
     ticks = list(load_data.keys())    # Ticks
     packets = list(load_data.values())  # Number of Packets
 
-    # Create a 2x2 figure with 4 subplots
-    fig, ax = plt.subplots(2, 2, figsize=(18, 12))  # Create 4 subplots
+    # Prepare the data for the 5th diagram (Attack and Legitimate Requests per Tick)
+    attack_passed = simulator.get_att_passed()  # Attack requests passed to DNS per tick
+    legit_passed = simulator.get_legit_passed()  # Legitimate requests passed to DNS per tick
+    ticks_for_requests = list(attack_passed.keys())  # Ticks (same for attack and legit)
+    attack_requests = list(attack_passed.values())  # Attack requests per tick
+    legit_requests = list(legit_passed.values())  # Legitimate requests per tick
+
+    # Prepare the data for the 6th diagram (Attack and Legitimate Packets per Tick)
+    attack_packets = simulator.get_att_c()  # Attack packets per tick
+    legit_packets = simulator.get_legit_c()  # Legitimate packets per tick
+    ticks_for_packets = list(attack_packets.keys())  # Ticks (same for attack and legit)
+    attack_packets_values = list(attack_packets.values())  # Attack packets per tick
+    legit_packets_values = list(legit_packets.values())  # Legitimate packets per tick
+
+    # Create a 3x2 figure with 6 subplots
+    fig, ax = plt.subplots(3, 2, figsize=(18, 18))  # Updated to create 6 subplots
 
     # First chart: Blocked vs Legitimate Blocked
     labels = ['Legitimate Requests Blocked', 'Attack Requests Blocked']
@@ -112,11 +136,38 @@ def generate_plot():
     ax[1, 0].set_ylabel('Number of Non-blocked Requests')
     ax[1, 0].set_title('Legitimate vs Attack Non-blocked Requests')
 
-    # Fourth chart: Packets vs Ticks (New Diagram)
-    ax[1, 1].plot(ticks, packets, marker='o', linestyle='-', color='b')
+    # Fourth chart: Packets vs Ticks (Enhanced)
+    scatter = ax[1, 1].scatter(ticks, packets, c=packets, cmap='coolwarm', edgecolor='k', s=100)
+    ax[1, 1].plot(ticks, packets, linestyle='--', color='b')  # Dashed line for better visibility
     ax[1, 1].set_xlabel('Ticks')
     ax[1, 1].set_ylabel('Number of Packets')
-    ax[1, 1].set_title('Packets as a function of Ticks')
+    ax[1, 1].set_title('Packets as a Function of Ticks')
+    ax[1, 1].grid(True)  # Add grid
+    # Annotate the maximum packet point
+    max_packet = max(packets)
+    max_tick = ticks[packets.index(max_packet)]
+    ax[1, 1].annotate(f'Max: {max_packet}', xy=(max_tick, max_packet), xytext=(max_tick + 2, max_packet + 10),
+                      arrowprops=dict(facecolor='black', shrink=0.05))
+
+    # Add colorbar for the scatter plot
+    cbar = plt.colorbar(scatter, ax=ax[1, 1])
+    cbar.set_label('Packet Intensity')
+
+    # Fifth chart: Attack and Legitimate Packets per Tick
+    ax[2, 0].plot(ticks_for_packets, attack_packets_values, marker='o', linestyle='-', color='r', label='Attack Packets')
+    ax[2, 0].plot(ticks_for_packets, legit_packets_values, marker='o', linestyle='-', color='g', label='Legitimate Packets')
+    ax[2, 0].set_xlabel('Ticks')
+    ax[2, 0].set_ylabel('Number of Packets')
+    ax[2, 0].set_title('Attack vs Legitimate Packets per Tick')
+    ax[2, 0].legend()
+
+    # Sixth chart: Attack and Legitimate Requests per Tick
+    ax[2, 1].plot(ticks_for_requests, attack_requests, marker='o', linestyle='-', color='r', label='Attack Requests')
+    ax[2, 1].plot(ticks_for_requests, legit_requests, marker='o', linestyle='-', color='g', label='Legitimate Requests')
+    ax[2, 1].set_xlabel('Ticks')
+    ax[2, 1].set_ylabel('Number of Requests')
+    ax[2, 1].set_title('Attack vs Legitimate Requests per Tick')
+    ax[2, 1].legend()
 
     # Save the plot as an image
     img = io.BytesIO()
@@ -125,6 +176,9 @@ def generate_plot():
     plt.close(fig)  # Close the figure to free up memory
 
     return send_file(img, mimetype='image/png')
+
+
+
 
 #
 # @app.route('/generate_load_plot')

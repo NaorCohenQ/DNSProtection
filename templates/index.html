@@ -25,35 +25,63 @@
                         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="/">Home</a>
+                                    <a class="nav-link active" aria-current="page" href="/">Home</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {% if request.path == '/rhhh' %}active{% endif %}" href="/rhhh">RHHH Algorithm</a>
+                                    <a class="nav-link" href="/rhhh">RHHH Algorithm</a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </nav>
 
-                <!-- Simulation Form -->
+                <!-- Simulation Form with Tooltips -->
                 <form id="simulatorForm" class="mb-4">
                     <div class="mb-3">
-                        <label for="attack_perc" class="form-label"><i class="fas fa-bug"></i> Attack Percentage:</label>
+                        <label for="num_of_packets" class="form-label">
+                            <i class="fas fa-database"></i> Data Volume:
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="We've got 100K traces. Enter number that indicates the amount of traces to use"></i>
+                        </label>
+                        <input type="number" class="form-control" id="num_of_packets" name="num_of_packets" value="10000" min="1" max="100000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="attack_perc" class="form-label">
+                            <i class="fas fa-bug"></i> Attack Percentage:
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Enter the percentage of traffic that simulates attack packets."></i>
+                        </label>
                         <input type="number" class="form-control" id="attack_perc" name="attack_perc" value="80" min="0" max="1000" required>
                     </div>
                     <div class="mb-3">
-                        <label for="subs_perc" class="form-label"><i class="fas fa-network-wired"></i> Subnet Percentage:</label>
+                        <label for="subs_perc" class="form-label">
+                            <i class="fas fa-network-wired"></i> Subnet Percentage:
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Specify the percentage of subnets of the total subnets to be involved in the simulation."></i>
+                        </label>
                         <input type="number" class="form-control" id="subs_perc" name="subs_perc" value="4" min="0" max="100" required>
                     </div>
                     <div class="mb-3">
-                        <label for="start_perc" class="form-label"><i class="fas fa-clock"></i> Start Percentage:</label>
+                        <label for="start_perc" class="form-label">
+                            <i class="fas fa-clock"></i> Start Percentage:
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Set the percentage of time into the simulation to start generating attack traffic."></i>
+                        </label>
                         <input type="number" class="form-control" id="start_perc" name="start_perc" value="0" min="0" max="100" required>
                     </div>
                     <div class="mb-3">
-                        <label for="pref_size" class="form-label"><i class="fas fa-sitemap"></i> Prefix Size:</label>
+                        <label for="pref_size" class="form-label">
+                            <i class="fas fa-sitemap"></i> Prefix Size:
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Set the prefix size for subnetting (1 for /8, 2 for /16, etc.)."></i>
+                        </label>
                         <input type="number" class="form-control" id="pref_size" name="pref_size" value="4" min="1" max="4" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-play-circle"></i> Run Simulation</button>
+
+                    <!-- Add a spinner for loading -->
+                    <div id="loadingSpinner" class="text-center d-none mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Simulation is running, please wait...</p>
+                    </div>
+
+                    <button type="submit" id="runSimulationBtn" class="btn btn-primary w-100"><i class="fas fa-play-circle"></i> Run Simulation</button>
                 </form>
 
                 <!-- Results Section -->
@@ -71,22 +99,67 @@
                     </ul>
                 </div>
 
-
-
                 <!-- Graph Section -->
                 <div id="graph_section" class="d-none mt-5">
                     <h2 class="text-center text-info"><i class="fas fa-chart-pie"></i> Graphs</h2>
                     <div class="text-center">
                         <img id="blocked_chart" src="" alt="Blocked Requests Chart" class="img-fluid" />
                     </div>
-
-
                 </div>
+<!-- More Section -->
+<div id="more_section" class="d-none mt-5">
+    <h2 class="text-center text-primary"><i class="fas fa-info-circle"></i> More</h2>
+
+    <!-- Data Section (Collapsible) -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h3 class="card-title text-success text-center" data-bs-toggle="collapse" data-bs-target="#dataCollapse" style="cursor: pointer;">
+                <i class="fas fa-database"></i> Data <i class="fas fa-chevron-down"></i>
+            </h3>
+        </div>
+        <div id="dataCollapse" class="collapse show">
+            <div class="card-body">
+                <ul class="list-group">
+                    <li class="list-group-item">The amount of data you've chosen is <b><span id="data_volume"></span></b> traces.</li>
+                    <li class="list-group-item">The volume of the attack is <b><span id="attack_volume"></span></b> packets.</li>
+                    <li class="list-group-item">The attack started at <b><span id="attack_start"></span></b> of the simulation time.</li>
+                    <li class="list-group-item">The total number of legitimate source IP packets is <b><span id="total_legit_ips"></span></b>.</li>
+                    <li class="list-group-item">The subnets that participated in the attack are: <b><span id="attack_subnets"></span></b>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagrams Information Section (Collapsible) -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h3 class="card-title text-info text-center" data-bs-toggle="collapse" data-bs-target="#diagramCollapse" style="cursor: pointer;">
+                <i class="fas fa-chart-bar"></i> Diagrams Information <i class="fas fa-chevron-down"></i>
+            </h3>
+        </div>
+        <div id="diagramCollapse" class="collapse show">
+            <div class="card-body">
+                <ul class="list-group">
+                    <li class="list-group-item"><b>Graph 1:</b> Blocked Requests Comparison - Compares the number of blocked legitimate requests and attack requests.</li>
+                    <li class="list-group-item"><b>Graph 2:</b> Total Blocked vs Non-blocked Requests - Displays the proportion of requests blocked vs requests that passed through.</li>
+                    <li class="list-group-item"><b>Graph 3:</b> Legitimate vs Attack Non-blocked Requests - Shows the amount of legitimate and attack requests that were not blocked.</li>
+                    <li class="list-group-item"><b>Graph 4:</b> Packets vs Ticks - Displays the number of packets processed over time (ticks).</li>
+                    <li class="list-group-item"><b>Graph 5:</b> Attack vs Legitimate Packets per Tick - Compares the number of attack and legitimate packets per tick.</li>
+                    <li class="list-group-item"><b>Graph 6:</b> Attack vs Legitimate Requests per Tick - Visualizes the number of attack and legitimate requests per tick sent to the DNS server.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
             </div>
         </div>
     </div>
 
+    <!-- jQuery (required for Bootstrap tooltips) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap JS and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
@@ -94,54 +167,77 @@
     <!-- FontAwesome JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 
-    <!-- JavaScript for form handling and validation -->
-    <script>
-              // Existing simulation form handling
-                document.getElementById('simulatorForm').addEventListener('submit', function(e) {
-                e.preventDefault();  // Prevent form from submitting the usual way
+    <!-- JavaScript to Enable Tooltips and Handle Loading Spinner -->
+<script>
+    function formatToK(number) {
+        return number >= 1000 ? (number / 1000) + 'K' : number;
+    }
 
-                let attack_perc = document.getElementById('attack_perc').value;
-                let subs_perc = document.getElementById('subs_perc').value;
-                let start_perc = document.getElementById('start_perc').value;
-                let pref_size = document.getElementById('pref_size').value;
+    document.getElementById('simulatorForm').addEventListener('submit', function(e) {
+        e.preventDefault();  // Prevent form from submitting the usual way
 
-                document.getElementById('blocked_chart').src = "";
-                //document.getElementById('load_chart').src = "";
+        let num_of_packets = document.getElementById('num_of_packets').value;
+        let attack_perc = document.getElementById('attack_perc').value;
+        let subs_perc = document.getElementById('subs_perc').value;
+        let start_perc = document.getElementById('start_perc').value;
+        let pref_size = document.getElementById('pref_size').value;
 
-                // Send the form data using POST to Flask backend
-                fetch('/run_simulation', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `attack_perc=${attack_perc}&subs_perc=${subs_perc}&start_perc=${start_perc}&pref_size=${pref_size}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Update the results in the HTML
-                    document.getElementById('total_requests').textContent = data.total_requests;
-                    document.getElementById('blocked_count').textContent = data.blocked_count;
-                    document.getElementById('legit_requests').textContent = data.legit_requests;
-                    document.getElementById('legit_blocked').textContent = data.legit_blocked;
-                    document.getElementById('attack_requests').textContent = data.attack_requests;
-                    document.getElementById('attack_blocked').textContent = data.attack_blocked;
-                    document.getElementById('percentage_attack_blocked').textContent = data.percentage_attack_blocked.toFixed(2);
-                    document.getElementById('percentage_legit_blocked').textContent = data.percentage_legit_blocked.toFixed(2);
+        // Show the loading spinner
+        document.getElementById('runSimulationBtn').disabled = true;
+        document.getElementById('loadingSpinner').classList.remove('d-none');
 
-                    // Generate the graphs and update the chart
-                    const imgSrc = `/generate_plot?legit_blocked=${data.legit_blocked}&attack_blocked=${data.attack_blocked}&perc_legit_blocked=${data.percentage_legit_blocked}&perc_attack_blocked=${data.percentage_attack_blocked}&total_requests=${data.total_requests}&blocked_count=${data.blocked_count}&legit_not_blocked=${data.legit_requests-data.legit_blocked}&attack_not_blocked=${data.attack_requests-data.attack_blocked}`;
-                    document.getElementById('blocked_chart').src = imgSrc;
+        // Hide results and graph section until we have data
+        document.getElementById('results').classList.add('d-none');
+        document.getElementById('graph_section').classList.add('d-none');
+        document.getElementById('more_section').classList.add('d-none');
 
-                    // Add this line to fetch the new load plot (Packets vs Ticks)
+        // Send the form data using POST to Flask backend
+        fetch('/run_simulation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `num_of_packets=${num_of_packets}&attack_perc=${attack_perc}&subs_perc=${subs_perc}&start_perc=${start_perc}&pref_size=${pref_size}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update the results in the HTML
+            document.getElementById('total_requests').textContent = data.total_requests;
+            document.getElementById('blocked_count').textContent = data.blocked_count;
+            document.getElementById('legit_requests').textContent = data.legit_requests;
+            document.getElementById('legit_blocked').textContent = data.legit_blocked;
+            document.getElementById('attack_requests').textContent = data.attack_requests;
+            document.getElementById('attack_blocked').textContent = data.attack_blocked;
+            document.getElementById('percentage_attack_blocked').textContent = data.percentage_attack_blocked.toFixed(2);
+            document.getElementById('percentage_legit_blocked').textContent = data.percentage_legit_blocked.toFixed(2);
+
+            // Format the "More" section data into multiple lines
+            document.getElementById('data_volume').innerHTML = formatToK(data.num_of_packets);
+            document.getElementById('attack_volume').innerHTML = formatToK(data.attack_requests);
+            document.getElementById('attack_start').innerHTML = data.start_perc + '%';
+            document.getElementById('total_legit_ips').innerHTML = data.total_legit_ips;
+            document.getElementById('attack_subnets').innerHTML = data.attack_subnets.join(', ');
+
+            // Show the results, graphs, and "More" section
+            document.getElementById('results').classList.remove('d-none');
+            document.getElementById('graph_section').classList.remove('d-none');
+            document.getElementById('more_section').classList.remove('d-none');
+
+            // Generate the graphs and update the chart
+            const imgSrc = `/generate_plot?legit_blocked=${data.legit_blocked}&attack_blocked=${data.attack_blocked}&perc_legit_blocked=${data.percentage_legit_blocked}&perc_attack_blocked=${data.percentage_attack_blocked}&total_requests=${data.total_requests}&blocked_count=${data.blocked_count}&legit_not_blocked=${data.legit_requests-data.legit_blocked}&attack_not_blocked=${data.attack_requests-data.attack_blocked}`;
+            document.getElementById('blocked_chart').src = imgSrc;
+        })
+        .finally(() => {
+            // Re-enable the button and hide the loading spinner
+            document.getElementById('runSimulationBtn').disabled = false;
+            document.getElementById('loadingSpinner').classList.add('d-none');
+        });
+    });
+</script>
 
 
-                    document.getElementById('graph_section').classList.remove('d-none');
 
-                    // Show the results section
-                    document.getElementById('results').classList.remove('d-none');
-                });
-            });
 
-    </script>
+
 </body>
 </html>
