@@ -14,24 +14,27 @@
                 <h1 class="card-title text-center mb-4">RHHH Algorithm</h1>
 
                 <!-- Navigation -->
-                <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 rounded">
-                    <div class="container-fluid">
-                        <a class="navbar-brand" href="#"><i class="fas fa-network-wired"></i> DNS Protection</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                            <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <a class="nav-link" aria-current="page" href="/">Home</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link active" href="/rhhh">RHHH Algorithm</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 rounded">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="fas fa-network-wired"></i> DNS Protection</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/rhhh">RHHH Algorithm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pdf_viewer">Results</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
                 <!-- HHH Algorithm Section -->
                 <h1 class="card-title text-center mb-4">Hierarchical Heavy Hitters (HHH) Algorithm</h1>
@@ -52,8 +55,6 @@
                 <p>
                     RHHH works by sampling traffic at various hierarchical levels (e.g., /8, /16, /24) to track the most significant traffic sources. It’s particularly useful for identifying DDoS attack sources or anomalies in high-traffic environments.
                 </p>
-
-                <h3>Key Features of RHHH:</h3>
                 <ul>
                     <li>Tracks significant traffic sources across multiple hierarchical levels (e.g., IP prefixes).</li>
                     <li>Randomized sampling improves performance without sacrificing accuracy.</li>
@@ -69,7 +70,7 @@
                 </p>
                 <ul>
                     <li><strong>Dynamic IP behavior monitoring using RHHH</strong>: The RHHH algorithm, particularly its <code>update</code> method, tracks patterns from various IP addresses and monitors the volume of traffic.</li>
-                    <li><strong>Threshold-based Blocking</strong>: IP addresses that seem to be part of an attack are blocked based on a dynamically adjusted threshold, calculated using traffic patterns tracked by RHHH.</li>
+                    <li><strong>Threshold-based Blocking</strong>: IP addresses that seem to be part of an attack are blocked based on a dynamically adjusted threshold, calculated the used traffic patterns tracked by RHHH.</li>
                 </ul>
 
                 <p>
@@ -82,7 +83,7 @@
                     <li>If the IP is not on the blacklist, the packet is sent to the DNS server. This action either succeeds or fails:
                         <ul>
                             <li>If the request succeeds (i.e., it’s legitimate), the IP is passed to the <code>update</code> function of RHHH, and its traffic is tracked as legitimate.</li>
-                            <li>If the request fails (NXDOMAIN), we maintain a counter <code>K</code> to track how many times the DNS server couldn't process the request.</li>
+                            <li>If the request fails (NXDOMAIN), we maintain a counter <code>K</code> for that specific IP to track how many times the DNS server couldn't process the request.</li>
                         </ul>
                     </li>
                     <li>If <code>K</code> exceeds a threshold <code>Y</code> (calculated from RHHH counters for the IP), the IP is added to the blacklist.</li>
@@ -92,7 +93,7 @@
                 <h3 class="text-center">Example Scenario</h3>
 
                 <p>
-                    <b>Scenario:</b> An IP sends 10 legitimate DNS requests followed by 5 NXDOMAIN requests.
+                    <b>Scenario:</b> An IP sends 10 legitimate DNS requests followed by 50 NXDOMAIN requests.
                 </p>
                 <ul>
                     <li>For each legitimate request, the RHHH algorithm updates its counters, recording the IP as legitimate traffic.</li>
@@ -104,6 +105,7 @@
                 <p>
                     By combining dynamic traffic monitoring and threshold-based blocking, this approach effectively mitigates DNS attacks, ensuring legitimate traffic flows while identifying and blocking potential attackers.
                 </p>
+                <h6 class="text-center"  style="color: #007bff; font-weight: thin;">Concrete examples and they're results can be viewed on <b>Results page</b></h6>
             </div>
         </div>
     </div>
@@ -111,5 +113,19 @@
     <!-- Bootstrap JS and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<script>             // Detect current page and highlight the corresponding menu item
+        const currentPath = window.location.pathname;
+
+        // Select all nav-links
+        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+        // Loop through each nav-link and apply the "active" class based on current path
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });</script>
 </body>
 </html>

@@ -5,5 +5,8 @@ project/
 ├── templates/     # HTML templates (UI)
 │   └── index.html
 │   └── rhhh.html
-└── static/        # CSS, JS files
+│   └── pdf_viewer.html  # New HTML file to display PDF
+└── static/        # Static files (CSS, JS, PDF)
     └── styles.css
+    └── pdf/
+        └── ResultsConc.pdf

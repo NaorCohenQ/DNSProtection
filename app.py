@@ -15,6 +15,12 @@ simulator = None
 def index():
     return render_template('index.html')
 
+
+@app.route('/pdf_viewer')
+def pdf_viewer():
+    return render_template('pdf_viewer.html')
+
+
 @app.route('/rhhh')
 def rhhh_info():
     return render_template('rhhh.html')
@@ -157,15 +163,15 @@ def generate_plot():
     ax[2, 0].plot(ticks_for_packets, legit_packets_values, marker='o', linestyle='-', color='g', label='Legitimate Packets')
     ax[2, 0].set_xlabel('Ticks')
     ax[2, 0].set_ylabel('Number of Packets')
-    ax[2, 0].set_title('Attack vs Legitimate Packets per Tick')
+    ax[2, 0].set_title('Data - Attack vs Legitimate Packets per Tick')
     ax[2, 0].legend()
 
     # Sixth chart: Attack and Legitimate Requests per Tick
-    ax[2, 1].plot(ticks_for_requests, attack_requests, marker='o', linestyle='-', color='r', label='Attack Requests')
     ax[2, 1].plot(ticks_for_requests, legit_requests, marker='o', linestyle='-', color='g', label='Legitimate Requests')
+    ax[2, 1].plot(ticks_for_requests, attack_requests, marker='o', linestyle='-', color='r', label='Attack Requests')
     ax[2, 1].set_xlabel('Ticks')
     ax[2, 1].set_ylabel('Number of Requests')
-    ax[2, 1].set_title('Attack vs Legitimate Requests per Tick')
+    ax[2, 1].set_title('DNS - Attack vs Legitimate Requests')
     ax[2, 1].legend()
 
     # Save the plot as an image

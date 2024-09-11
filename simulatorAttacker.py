@@ -175,12 +175,13 @@ class DNSProtectionLayer:
         if nxdomain:
             if not self.denied.__contains__(ip):
                 self.denied[ip] = 0
+            self.rhhh2.update(ip)
 
             self.denied[ip] +=1
             # use RHH for props, block IP if necessary.
-            if self.rhhh.getAmo(ip,self.pref_size)>= self.denied[ip]-self.threshold:
+            if self.denied[ip] >= self.rhhh2.getAmount(ip,self.pref_size)-self.threshold:
                 self.blocked_ips[ip] = tick
-
+                return "Blocked"
             return "Allowed"
 
 
@@ -578,10 +579,10 @@ class Simulator:
         return attack_traff
 
 
-smltr = Simulator()
-smltr.simulate_attack(300,12,0,3,10000,0.01)
-smltr.printStats()
-print(smltr.get_subnets())
+#smltr = Simulator()
+#smltr.simulate_attack(250,20,10,2,10000,0.01)
+#smltr.printStats()
+#print(smltr.get_subnets())
 # print("-----------------------------------------------")
 # smltr.simulate_attack(300,3,0,2)
 # smltr.printStats()

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Customize the PDF viewer container */
+        #pdf-container {
+            height: 80vh; /* Take 80% of the viewport height */
+            overflow-y: scroll; /* Enable vertical scrolling */
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        .pdf-page {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <!-- Navigation (same as in index.html and rhhh.html) -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 rounded">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#"><i class="fas fa-network-wired"></i> DNS Protection</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/rhhh">RHHH Algorithm</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/pdf_viewer">Results</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- PDF Viewer -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-center mb-4">Examples - Results & Graphs Analysis</h1>
+
+                <!-- PDF Container with Scroll Bar -->
+                <div id="pdf-container">
+                    <div id="pdf-viewer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+    <script>
+
+            // Detect current page and highlight the corresponding menu item
+        const currentPath = window.location.pathname;
+
+        // Select all nav-links
+        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+        // Loop through each nav-link and apply the "active" class based on current path
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        // URL of the PDF
+        const pdfUrl = "{{ url_for('static', filename='pdf/ResultsConc.pdf') }}";
+
+        let pdfDoc = null;
+
+        const scale = 1.55, // Adjust this value to scale the PDF
+              viewerContainer = document.getElementById('pdf-viewer');
+
+        // Render each page
+        const renderPage = (pageNum) => {
+            pdfDoc.getPage(pageNum).then(page => {
+                const viewport = page.getViewport({ scale });
+
+                // Create a canvas element for each page
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Append the canvas to the viewer
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'pdf-page';
+                pageDiv.appendChild(canvas);
+                viewerContainer.appendChild(pageDiv);
+
+                // Render the page on the canvas
+                const renderCtx = {
+                    canvasContext: ctx,
+                    viewport
+                };
+
+                page.render(renderCtx);
+            });
+        };
+
+        // Get Document
+        pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
+            pdfDoc = pdfDoc_;
+
+            // Render all pages
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                renderPage(pageNum);
+            }
+        });
+    </script>
+</body>
+</html>
